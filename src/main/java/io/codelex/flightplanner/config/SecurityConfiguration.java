@@ -10,13 +10,13 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                //   .cors().and()
-                .csrf().disable() //disables CSRF protection
-                .authorizeRequests() //tells that path matchers will start
-                .antMatchers("/testing-api/**", "/api/**").anonymous() //everything under /spring without authentication
-                .anyRequest().authenticated() //everything else with authentication
+
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/testing-api/**", "/api/**").anonymous()
+                .anyRequest().authenticated()
                 .and()
-                .httpBasic(); //authentication type
+                .httpBasic();
 
         return http.build();
     }

@@ -1,6 +1,10 @@
 package io.codelex.flightplanner.flightplan;
 
-import io.codelex.flightplanner.flightplan.domain.*;
+import io.codelex.flightplanner.flightplan.domain.Airport;
+import io.codelex.flightplanner.flightplan.domain.Flight;
+import io.codelex.flightplanner.flightplan.dto.FlightRequest;
+import io.codelex.flightplanner.flightplan.dto.PageResult;
+import io.codelex.flightplanner.flightplan.dto.SearchFlightsRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,7 +57,7 @@ public class FlightPlanService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Can't add same flight twice");
         } else if (sameAirport(flight)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Same Airports");
-        } else if (!invalidDatesFlight(flight)) {
+        } else if (!validDatesFlight(flight)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arrival after departure");
         } else {
             this.flightPlanRepository.saveFlight(flight);
@@ -71,7 +75,7 @@ public class FlightPlanService {
         return flight.getFrom().equals(flight.getTo());
     }
 
-    public boolean invalidDatesFlight(Flight flight) {
+    public boolean validDatesFlight(Flight flight) {
         return LocalDateTime
                 .parse(flight.getDepartureTime(), dateTimeFormatter)
                 .isBefore(LocalDateTime.parse(flight.getArrivalTime(), dateTimeFormatter));

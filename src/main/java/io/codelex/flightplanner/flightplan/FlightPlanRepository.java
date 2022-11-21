@@ -2,14 +2,12 @@ package io.codelex.flightplanner.flightplan;
 
 import io.codelex.flightplanner.flightplan.domain.Flight;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.context.annotation.ApplicationScope;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
-@ApplicationScope
 public class FlightPlanRepository {
 
     private List<Flight> requests;
