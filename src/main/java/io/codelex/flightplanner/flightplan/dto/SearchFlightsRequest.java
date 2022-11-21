@@ -1,4 +1,4 @@
-package io.codelex.flightplanner.flightplan.domain;
+package io.codelex.flightplanner.flightplan.dto;
 
 import javax.validation.constraints.NotBlank;
 import java.time.format.DateTimeFormatter;
