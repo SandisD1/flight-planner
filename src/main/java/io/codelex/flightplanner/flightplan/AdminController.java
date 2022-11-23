@@ -8,29 +8,18 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-public class AdminCommandsController {
-    private FlightPlanService flightPlanService;
+public class AdminController {
+    private final FlightPlanService flightPlanService;
 
-    public AdminCommandsController(FlightPlanService flightPlanService) {
+    public AdminController(FlightPlanService flightPlanService) {
 
-        this.flightPlanService = flightPlanService;
-    }
-
-
-    public FlightPlanService getFlightPlanService() {
-        return flightPlanService;
-    }
-
-    public void setFlightPlanService(FlightPlanService flightPlanService) {
         this.flightPlanService = flightPlanService;
     }
 
     @PutMapping(value = "/admin-api/flights")
     @ResponseStatus(HttpStatus.CREATED)
     public Flight addFlight(@Valid @RequestBody FlightRequest flightRequest) {
-        Flight flight = this.flightPlanService.setID(flightRequest);
-
-        return this.flightPlanService.addFlight(flight);
+        return this.flightPlanService.addFlight(flightRequest);
     }
 
 

@@ -22,8 +22,6 @@ public class FlightRequest {
     @NotBlank
     private String arrivalTime;
 
-//    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
     public FlightRequest(Airport from, Airport to, String carrier, String departureTime, String arrivalTime) {
         this.from = from;
         this.to = to;
@@ -73,9 +71,6 @@ public class FlightRequest {
         this.arrivalTime = arrivalTime;
     }
 
-//    public DateTimeFormatter getDateFormatter() {
-//        return dateFormatter;
-//    }
 
     @Override
     public boolean equals(Object o) {

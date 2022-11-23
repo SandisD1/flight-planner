@@ -8,27 +8,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
-public class CustomerCommandsController {
+public class CustomerController {
 
-    private FlightPlanService flightPlanService;
+    private final FlightPlanService flightPlanService;
 
-    public CustomerCommandsController(FlightPlanService flightPlanService) {
-        this.flightPlanService = flightPlanService;
-    }
-
-    public FlightPlanService getFlightPlanService() {
-        return flightPlanService;
-    }
-
-    public void setFlightPlanService(FlightPlanService flightPlanService) {
+    public CustomerController(FlightPlanService flightPlanService) {
         this.flightPlanService = flightPlanService;
     }
 
     @GetMapping(value = "/api/airports")
     @ResponseStatus(HttpStatus.OK)
-    public Airport[] searchAirport(@RequestParam String search) {
+    public List<Airport> searchAirport(@RequestParam String search) {
         return this.flightPlanService.searchAirport(search);
     }
 
