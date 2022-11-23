@@ -1,54 +1,66 @@
 package io.codelex.flightplanner.flightplan;
 
+import io.codelex.flightplanner.flightplan.domain.Airport;
 import io.codelex.flightplanner.flightplan.domain.Flight;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 public class FlightPlanRepository {
 
-    private List<Flight> requests;
-    private final AtomicInteger idsGiven;
+    private List<Flight> addedFlights;
+
+    private Set<Airport> storedAirports;
+    private AtomicInteger previousId;
+
 
     public FlightPlanRepository() {
-        this.requests = new ArrayList<>();
-        this.idsGiven = new AtomicInteger();
+        this.addedFlights = new ArrayList<>();
+        this.previousId = new AtomicInteger();
+        this.storedAirports = new HashSet<>();
+
     }
 
-    public List<Flight> getPlan() {
-        return requests;
+    public synchronized List<Flight> getAddedFlights() {
+        return addedFlights;
     }
 
-    public void setPlan(List<Flight> plan) {
-        this.requests = plan;
+    public void clearFlights() {
+        this.addedFlights = new ArrayList<>();
+        this.previousId = new AtomicInteger();
+        this.storedAirports = new HashSet<>();
     }
 
-    public AtomicInteger getIdsGiven() {
-        return idsGiven;
+    public Set<Airport> getStoredAirports() {
+        return storedAirports;
     }
 
-    public void setIdsGiven(int newIdS) {
-        this.idsGiven.set(newIdS);
+    public AtomicInteger getPreviousId() {
+        return previousId;
     }
 
-    public void saveFlight(Flight flight) {
-        this.requests.add(flight);
+
+    public synchronized void saveFlight(Flight flight) {
+        this.addedFlights.add(flight);
+        this.storedAirports.add(flight.getFrom());
+        this.storedAirports.add(flight.getTo());
     }
 
-    public Flight getFlight(int id) {
+    public synchronized Flight getFlight(int id) {
 
-        return requests.stream()
+        return addedFlights.stream()
                 .filter(storedFlight -> storedFlight.getId() == id)
                 .findFirst()
                 .orElse(null);
     }
 
-    public void deleteFlight(int id) {
-        setPlan(requests.stream()
-                .filter(storedFlight -> storedFlight.getId() != id)
-                .toList());
+    public synchronized void deleteFlight(int id) {
+        addedFlights.removeIf(storedFlight -> storedFlight.getId() == id);
+
     }
 }

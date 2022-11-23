@@ -12,13 +12,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FlightPlanService {
 
-    private FlightPlanRepository flightPlanRepository;
+    private final FlightPlanRepository flightPlanRepository;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -27,46 +26,37 @@ public class FlightPlanService {
 
     }
 
-    public FlightPlanRepository getFlightPlanRepository() {
-        return flightPlanRepository;
-    }
-
-    public void setFlightPlanRepository(FlightPlanRepository flightPlanRepository) {
-        this.flightPlanRepository = flightPlanRepository;
-    }
-
-
     public void clearFlights() {
-        this.flightPlanRepository.setIdsGiven(0);
-        this.flightPlanRepository.setPlan(new ArrayList<>());
+        this.flightPlanRepository.clearFlights();
     }
 
-    public Flight setID(FlightRequest flightRequest) {
-        int newID = this.flightPlanRepository.getIdsGiven().incrementAndGet();
-        return new Flight(newID,
-                flightRequest.getFrom(),
-                flightRequest.getTo(),
-                flightRequest.getCarrier(),
-                flightRequest.getDepartureTime(),
-                flightRequest.getArrivalTime());
-    }
+    public Flight addFlight(FlightRequest flightRequest) {
+        Flight newFlight = parseToFlight(flightRequest);
 
-    public Flight addFlight(Flight flight) {
-
-        if (flightAlreadyAdded(flight)) {
+        if (flightAlreadyAdded(newFlight)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Can't add same flight twice");
-        } else if (sameAirport(flight)) {
+        } else if (sameAirport(newFlight)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Same Airports");
-        } else if (!validDatesFlight(flight)) {
+        } else if (!validDatesFlight(newFlight)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arrival after departure");
         } else {
-            this.flightPlanRepository.saveFlight(flight);
-            return flight;
+            newFlight = addID(newFlight);
+
+            this.flightPlanRepository.saveFlight(newFlight);
+            return newFlight;
         }
     }
 
+    public Flight parseToFlight(FlightRequest flightRequest) {
+        return new Flight(flightRequest.getFrom(),
+                flightRequest.getTo(),
+                flightRequest.getCarrier(),
+                LocalDateTime.parse(flightRequest.getDepartureTime(), dateTimeFormatter),
+                LocalDateTime.parse(flightRequest.getArrivalTime(), dateTimeFormatter));
+    }
+
     public boolean flightAlreadyAdded(Flight flight) {
-        return this.flightPlanRepository.getPlan().stream()
+        return this.flightPlanRepository.getAddedFlights().stream()
                 .anyMatch(storedFlight -> storedFlight.equals(flight));
     }
 
@@ -76,10 +66,14 @@ public class FlightPlanService {
     }
 
     public boolean validDatesFlight(Flight flight) {
-        return LocalDateTime
-                .parse(flight.getDepartureTime(), dateTimeFormatter)
-                .isBefore(LocalDateTime.parse(flight.getArrivalTime(), dateTimeFormatter));
+        return flight.getDepartureTime().isBefore(flight.getArrivalTime());
 
+    }
+
+    public Flight addID(Flight flight) {
+        int nextId = this.flightPlanRepository.getPreviousId().incrementAndGet();
+        flight.setId(nextId);
+        return flight;
     }
 
     public Flight fetchFlight(int id) {
@@ -94,39 +88,21 @@ public class FlightPlanService {
         this.flightPlanRepository.deleteFlight(id);
     }
 
-    public Airport[] searchAirport(String phrase) {
+    public List<Airport> searchAirport(String phrase) {
 
         String input = phrase.trim().toUpperCase();
-        List<Airport> matches = new ArrayList<>();
+        return this.flightPlanRepository.getStoredAirports()
+                .stream()
+                .filter(storedAirport -> searchInAirport(storedAirport, input))
+                .toList();
 
-        for (Flight flight : this.flightPlanRepository.getPlan()) {
-            Airport from = flight.getFrom();
-            Airport to = flight.getTo();
-            Airport found = searchInAirport(from, input);
-            if (found != null) {
-                matches.add(found);
-                return matches.toArray(new Airport[1]);
-            } else {
-                found = searchInAirport(to, input);
-            }
-            if (found != null) {
-                matches.add(found);
-                return matches.toArray(new Airport[1]);
-            }
-        }
-        return matches.toArray(new Airport[0]);
     }
 
-    public Airport searchInAirport(Airport airport, String phrase) {
-        if (airport.getAirport().toUpperCase().contains(phrase)) {
-            return airport;
-        } else if (airport.getCity().toUpperCase().contains(phrase)) {
-            return airport;
-        } else if (airport.getCountry().toUpperCase().contains(phrase)) {
-            return airport;
-        } else {
-            return null;
-        }
+    public boolean searchInAirport(Airport airport, String phrase) {
+
+        return airport.getAirport().toUpperCase().contains(phrase)
+                || airport.getCity().toUpperCase().contains(phrase)
+                || airport.getCountry().toUpperCase().contains(phrase);
     }
 
     public PageResult searchFlights(SearchFlightsRequest req) {
@@ -134,7 +110,7 @@ public class FlightPlanService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Same Airports");
         } else {
             List<Flight> foundFlights =
-                    this.flightPlanRepository.getPlan()
+                    this.flightPlanRepository.getAddedFlights()
                             .stream()
                             .filter(storedFlight -> storedFlight.getFrom()
                                     .getAirport()
@@ -142,8 +118,7 @@ public class FlightPlanService {
                                     storedFlight.getTo()
                                             .getAirport()
                                             .equals(req.getTo()) &&
-                                    LocalDateTime
-                                            .parse(storedFlight.getDepartureTime(), dateTimeFormatter)
+                                    storedFlight.getDepartureTime()
                                             .toLocalDate()
                                             .equals(LocalDate.parse(req.getDepartureDate())))
                             .toList();
