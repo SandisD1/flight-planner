@@ -19,17 +19,17 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "flightplanner", name = "appmode", havingValue = "in-memory")
 public class FlightPlanInMemoryService implements FlightPlanService {
 
-    private final FlightPlanRepository flightPlanRepository;
+    private final FlightsAndAirportsInMemoryRepository flightsAndAirportsInMemoryRepository;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public FlightPlanInMemoryService(FlightPlanRepository flightPlanRepository) {
-        this.flightPlanRepository = flightPlanRepository;
+    public FlightPlanInMemoryService(FlightsAndAirportsInMemoryRepository flightsAndAirportsInMemoryRepository) {
+        this.flightsAndAirportsInMemoryRepository = flightsAndAirportsInMemoryRepository;
 
     }
 
     public void clearFlights() {
-        this.flightPlanRepository.clearFlights();
+        this.flightsAndAirportsInMemoryRepository.clearFlights();
     }
 
     public Flight addFlight(FlightRequest flightRequest) {
@@ -44,7 +44,7 @@ public class FlightPlanInMemoryService implements FlightPlanService {
         } else {
             newFlight = addID(newFlight);
 
-            this.flightPlanRepository.saveFlight(newFlight);
+            this.flightsAndAirportsInMemoryRepository.saveFlight(newFlight);
             return newFlight;
         }
     }
@@ -58,7 +58,7 @@ public class FlightPlanInMemoryService implements FlightPlanService {
     }
 
     public boolean flightAlreadyAdded(Flight flight) {
-        return this.flightPlanRepository.getAddedFlights().stream()
+        return this.flightsAndAirportsInMemoryRepository.getAddedFlights().stream()
                 .anyMatch(storedFlight -> storedFlight.equals(flight));
     }
 
@@ -73,13 +73,13 @@ public class FlightPlanInMemoryService implements FlightPlanService {
     }
 
     public Flight addID(Flight flight) {
-        int nextId = this.flightPlanRepository.getPreviousId().incrementAndGet();
+        int nextId = this.flightsAndAirportsInMemoryRepository.getPreviousId().incrementAndGet();
         flight.setId(nextId);
         return flight;
     }
 
     public Flight fetchFlight(Integer id) {
-        Flight found = this.flightPlanRepository.getFlight(id);
+        Flight found = this.flightsAndAirportsInMemoryRepository.getFlight(id);
         if (found == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -87,13 +87,13 @@ public class FlightPlanInMemoryService implements FlightPlanService {
     }
 
     public void deleteFlight(Integer id) {
-        this.flightPlanRepository.deleteFlight(id);
+        this.flightsAndAirportsInMemoryRepository.deleteFlight(id);
     }
 
     public List<Airport> searchAirport(String phrase) {
 
         String input = phrase.trim().toUpperCase();
-        return this.flightPlanRepository.getStoredAirports()
+        return this.flightsAndAirportsInMemoryRepository.getStoredAirports()
                 .stream()
                 .filter(storedAirport -> searchInAirport(storedAirport, input))
                 .toList();
@@ -112,7 +112,7 @@ public class FlightPlanInMemoryService implements FlightPlanService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Same Airports");
         } else {
             List<Flight> foundFlights =
-                    this.flightPlanRepository.getAddedFlights()
+                    this.flightsAndAirportsInMemoryRepository.getAddedFlights()
                             .stream()
                             .filter(storedFlight -> storedFlight.getFrom()
                                     .getAirport()

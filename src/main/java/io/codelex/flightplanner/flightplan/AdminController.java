@@ -23,15 +23,12 @@ public class AdminController {
         return this.flightPlanService.addFlight(flightRequest);
     }
 
-
     @GetMapping(value = "/admin-api/flights/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public Flight findFlight(@PathVariable Integer id) {
         return this.flightPlanService.fetchFlight(id);
     }
 
     @DeleteMapping(value = "/admin-api/flights/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteFlight(@PathVariable Integer id) {
         this.flightPlanService.deleteFlight(id);
     }

@@ -19,14 +19,14 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "flightplanner", name = "appmode", havingValue = "in-database")
 public class FlightPlanDbService implements FlightPlanService {
 
-    private final FlightRepository flightRepository;
-    private final AirportRepository airportRepository;
+    private final FlightsRepository flightsRepository;
+    private final AirportsRepository airportsRepository;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public FlightPlanDbService(FlightRepository flightRepository, AirportRepository airportRepository) {
-        this.flightRepository = flightRepository;
-        this.airportRepository = airportRepository;
+    public FlightPlanDbService(FlightsRepository flightsRepository, AirportsRepository airportsRepository) {
+        this.flightsRepository = flightsRepository;
+        this.airportsRepository = airportsRepository;
     }
 
     @Override
@@ -39,9 +39,9 @@ public class FlightPlanDbService implements FlightPlanService {
         } else if (!validDatesFlight(newFlight)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arrival after departure");
         } else {
-            this.airportRepository.save(newFlight.getFrom());
-            this.airportRepository.save(newFlight.getTo());
-            return this.flightRepository.save(newFlight);
+            this.airportsRepository.save(newFlight.getFrom());
+            this.airportsRepository.save(newFlight.getTo());
+            return this.flightsRepository.save(newFlight);
         }
     }
 
@@ -56,9 +56,17 @@ public class FlightPlanDbService implements FlightPlanService {
     }
 
     public boolean flightAlreadyAdded(Flight flight) {
+        Flight duplicateFlight = this.flightsRepository.findFlightByAllFields(flight.getFrom(),
+                flight.getTo(),
+                flight.getCarrier(),
+                flight.getDepartureTime(),
+                flight.getArrivalTime());
 
-        return this.flightRepository.findAll().stream()
-                .anyMatch(storedFlight -> storedFlight.equals(flight));
+        if (duplicateFlight != null) {
+            return duplicateFlight.equals(flight);
+        }
+        return false;
+
     }
 
     public boolean sameAirport(Flight flight) {
@@ -73,7 +81,7 @@ public class FlightPlanDbService implements FlightPlanService {
 
     @Override
     public Flight fetchFlight(Integer id) {
-        Flight found = this.flightRepository.findById(id).orElse(null);
+        Flight found = this.flightsRepository.findById(id).orElse(null);
         if (found == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -82,25 +90,17 @@ public class FlightPlanDbService implements FlightPlanService {
 
     @Override
     public void deleteFlight(Integer id) {
-        if (this.flightRepository.existsById(id)) {
-            this.flightRepository.deleteById(id);
+        if (this.flightsRepository.existsById(id)) {
+            this.flightsRepository.deleteById(id);
         }
     }
 
     @Override
     public List<Airport> searchAirport(String phrase) {
-        String input = phrase.trim().toUpperCase();
-        return this.airportRepository.findAll()
-                .stream()
-                .filter(storedAirport -> searchInAirport(storedAirport, input))
-                .toList();
-    }
+        String input = phrase.trim().toLowerCase();
 
-    public boolean searchInAirport(Airport airport, String phrase) {
+        return this.airportsRepository.findAirportByAnyFieldLike(input);
 
-        return airport.getAirport().toUpperCase().contains(phrase)
-                || airport.getCity().toUpperCase().contains(phrase)
-                || airport.getCountry().toUpperCase().contains(phrase);
     }
 
     @Override
@@ -108,19 +108,12 @@ public class FlightPlanDbService implements FlightPlanService {
         if (req.getFrom().equals(req.getTo())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Same Airports");
         } else {
-            List<Flight> foundFlights =
-                    this.flightRepository.findAll()
-                            .stream()
-                            .filter(storedFlight -> storedFlight.getFrom()
-                                    .getAirport()
-                                    .equals(req.getFrom()) &&
-                                    storedFlight.getTo()
-                                            .getAirport()
-                                            .equals(req.getTo()) &&
-                                    storedFlight.getDepartureTime()
-                                            .toLocalDate()
-                                            .equals(LocalDate.parse(req.getDepartureDate())))
-                            .toList();
+
+            LocalDate searchDate = LocalDate.parse(req.getDepartureDate());
+
+            List<Flight> foundFlights = this.flightsRepository.findFlightsByRequest(req.getFrom(),
+                    req.getTo(), searchDate.atStartOfDay(),
+                    searchDate.plusDays(1).atStartOfDay());
 
             return new PageResult(foundFlights);
         }
@@ -128,6 +121,6 @@ public class FlightPlanDbService implements FlightPlanService {
 
     @Override
     public void clearFlights() {
-        this.flightRepository.deleteAll();
+        this.flightsRepository.deleteAll();
     }
 }
