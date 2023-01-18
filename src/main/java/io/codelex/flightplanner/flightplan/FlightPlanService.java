@@ -6,6 +6,7 @@ import io.codelex.flightplanner.flightplan.dto.FlightRequest;
 import io.codelex.flightplanner.flightplan.dto.PageResult;
 import io.codelex.flightplanner.flightplan.dto.SearchFlightsRequest;
 
+
 import java.util.List;
 
 public interface FlightPlanService {
@@ -22,3 +23,4 @@ public interface FlightPlanService {
 
     void clearFlights();
 }
+

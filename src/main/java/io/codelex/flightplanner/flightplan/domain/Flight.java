@@ -26,6 +26,7 @@ public class Flight {
     @Column(name = "departure_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime departureTime;
     @Column(name = "arrival_time", columnDefinition = "TIMESTAMP")
+
     private LocalDateTime arrivalTime;
 
     public Flight(Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
@@ -35,6 +36,7 @@ public class Flight {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
     }
+
 
     public Flight(Integer id, Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
         this.id = id;
@@ -53,6 +55,7 @@ public class Flight {
     }
 
     public void setId(Integer id) {
+
         this.id = id;
     }
 

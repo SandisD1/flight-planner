@@ -1,5 +1,6 @@
 package io.codelex.flightplanner.flightplan.domain;
 
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -27,14 +28,17 @@ public class Airport {
         this.airport = airport.trim();
     }
 
+
     public Airport() {
     }
+
 
     public String getCountry() {
         return country;
     }
 
     public void setCountry(String country) {
+
         this.country = country.trim();
     }
 
@@ -43,6 +47,7 @@ public class Airport {
     }
 
     public void setCity(String city) {
+
         this.city = city.trim();
     }
 
@@ -51,6 +56,7 @@ public class Airport {
     }
 
     public void setAirport(String airport) {
+
         this.airport = airport.trim();
     }
 
