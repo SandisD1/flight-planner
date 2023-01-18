@@ -13,11 +13,9 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-
     @ManyToOne
     @JoinColumn(name = "airport_from")
     private Airport from;
-
     @ManyToOne
     @JoinColumn(name = "airport_to")
     private Airport to;
@@ -26,7 +24,6 @@ public class Flight {
     @Column(name = "departure_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime departureTime;
     @Column(name = "arrival_time", columnDefinition = "TIMESTAMP")
-
     private LocalDateTime arrivalTime;
 
     public Flight(Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {

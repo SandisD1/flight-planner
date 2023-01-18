@@ -12,9 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
 public class FlightsAndAirportsInMemoryRepository {
-
     private List<Flight> addedFlights;
-
     private Set<Airport> storedAirports;
     private AtomicInteger previousId;
 
