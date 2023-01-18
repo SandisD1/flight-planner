@@ -11,15 +11,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
-public class FlightPlanRepository {
-
+public class FlightsAndAirportsInMemoryRepository {
     private List<Flight> addedFlights;
-
     private Set<Airport> storedAirports;
     private AtomicInteger previousId;
 
 
-    public FlightPlanRepository() {
+    public FlightsAndAirportsInMemoryRepository() {
         this.addedFlights = new ArrayList<>();
         this.previousId = new AtomicInteger();
         this.storedAirports = new HashSet<>();

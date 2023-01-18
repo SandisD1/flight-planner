@@ -1,14 +1,25 @@
 package io.codelex.flightplanner.flightplan.domain;
 
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
+@Entity
+@Table(name = "airport")
 public class Airport {
     @NotBlank
+    @Column(name = "country")
     private String country;
     @NotBlank
+    @Column(name = "city")
     private String city;
     @NotBlank
+    @Id
+    @Column(name = "airport")
     private String airport;
 
     public Airport(String country, String city, String airport) {
@@ -17,12 +28,18 @@ public class Airport {
         this.airport = airport.trim();
     }
 
+
+    public Airport() {
+    }
+
+
     public String getCountry() {
         return country;
     }
 
     public void setCountry(String country) {
-        this.country = country;
+
+        this.country = country.trim();
     }
 
     public String getCity() {
@@ -30,7 +47,8 @@ public class Airport {
     }
 
     public void setCity(String city) {
-        this.city = city;
+
+        this.city = city.trim();
     }
 
     public String getAirport() {
@@ -38,8 +56,10 @@ public class Airport {
     }
 
     public void setAirport(String airport) {
-        this.airport = airport;
+
+        this.airport = airport.trim();
     }
+
 
     @Override
     public boolean equals(Object o) {

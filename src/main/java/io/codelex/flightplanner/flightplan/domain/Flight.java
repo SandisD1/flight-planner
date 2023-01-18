@@ -2,15 +2,28 @@ package io.codelex.flightplanner.flightplan.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "flight")
 public class Flight {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+    @ManyToOne
+    @JoinColumn(name = "airport_from")
     private Airport from;
+    @ManyToOne
+    @JoinColumn(name = "airport_to")
     private Airport to;
+    @Column(name = "carrier")
     private String carrier;
+    @Column(name = "departure_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime departureTime;
+    @Column(name = "arrival_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime arrivalTime;
 
     public Flight(Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
@@ -21,11 +34,25 @@ public class Flight {
         this.arrivalTime = arrivalTime;
     }
 
-    public long getId() {
+
+    public Flight(Integer id, Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        this.id = id;
+        this.from = from;
+        this.to = to;
+        this.carrier = carrier;
+        this.departureTime = departureTime;
+        this.arrivalTime = arrivalTime;
+    }
+
+    public Flight() {
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
+
         this.id = id;
     }
 
